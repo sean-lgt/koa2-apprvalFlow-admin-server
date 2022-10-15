@@ -21,6 +21,7 @@
     "koa-static": "^5.0.0",
     "koa-views": "^6.2.0",
     "log4js": "^6.7.0",
+    "mongoose": "^6.6.5",
     "pug": "^2.0.3"
   },
   "devDependencies": {
