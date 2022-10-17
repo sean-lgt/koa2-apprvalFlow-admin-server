@@ -36,6 +36,7 @@ app.use(views(__dirname + '/views', {
 app.use(async (ctx, next) => {
   // const start = new Date()
   // 查看请求参数
+  log4js.info(`url:${JSON.stringify(ctx.request.url)}`)
   log4js.info(`query:${JSON.stringify(ctx.request.query)}`)
   log4js.info(`params:${JSON.stringify(ctx.request.body)}`)
   await next()

@@ -2,13 +2,13 @@
  * 用户管理模块
  */
 const router = require('koa-router')()
+const jwt = require('jsonwebtoken') //生成jwt
 const User = require('../models/userSchema')
 const util = require('../utils/util')
 router.prefix('/api/users')
 
 // 登录
 router.post('/login', async (ctx) => {
-  console.log("SDFASF")
   try {
     // 获取post传递的数据
     const { userName, userPwd } = ctx.request.body
@@ -16,8 +16,13 @@ router.post('/login', async (ctx) => {
       userName,
       userPwd
     })
+    const data = res._doc //集合数据
+    const token = jwt.sign({
+      data: res
+    }, 'jwttwj', { expiresIn: '30' })
     if (res) {
-      ctx.body = util.success(res)
+      data.token = token
+      ctx.body = util.success(data)
     } else {
       ctx.body = util.fail('账号密码不正确')
     }
