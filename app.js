@@ -4,11 +4,13 @@ const views = require('koa-views')
 const json = require('koa-json')
 const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
+const koajwt = require('koa-jwt')
 // const logger = require('koa-logger')   // 官方提供的 logger 插件，比较简单
 // const log4js = require('log4js') // log4js 插件
 const log4js = require('./utils/log4j') //自定义封装的log工具
 const index = require('./routes/index')
 const users = require('./routes/users')
+const util = require('./utils/util')
 
 // 加载 mongoDB
 require('./config/db')
@@ -39,7 +41,15 @@ app.use(async (ctx, next) => {
   log4js.info(`url:${JSON.stringify(ctx.request.url)}`)
   log4js.info(`query:${JSON.stringify(ctx.request.query)}`)
   log4js.info(`params:${JSON.stringify(ctx.request.body)}`)
-  await next()
+  await next().catch(err => {
+    if (err.status == '401') {
+      // 中间件拦截 校验token出现问题
+      ctx.status = 200
+      ctx.body = util.fail('Token认证失败', util.CODE.AUTH_ERROR)
+    } else {
+      throw err
+    }
+  })
   // 使用封装好的log工具函数打印
   // log4js.info('测试打印日志')
   // log4js.error('此处发生错误，打印日志')
@@ -51,6 +61,10 @@ app.use(async (ctx, next) => {
   // console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
 
+// 路由加载前使用 koajwt 拦截
+app.use(koajwt({ secret: "jwt@twj" }).unless({
+  path: [/^\/api\/users\/login/] //排除登录接口校验token
+}))
 // routes
 // app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())

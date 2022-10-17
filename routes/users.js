@@ -15,11 +15,11 @@ router.post('/login', async (ctx) => {
     const res = await User.findOne({
       userName,
       userPwd
-    })
+    }, 'userId userName userEmail state role deptId roleList') // 提取某些字段返回  空格隔开
     const data = res._doc //集合数据
     const token = jwt.sign({
-      data: res
-    }, 'jwttwj', { expiresIn: '30' })
+      data: data
+    }, 'jwt@twj', { expiresIn: '2h' })
     if (res) {
       data.token = token
       ctx.body = util.success(data)
