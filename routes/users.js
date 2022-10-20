@@ -29,8 +29,33 @@ router.post('/login', async (ctx) => {
   } catch (error) {
     ctx.body = util.fail(error.msg || '系统异常')
   }
-
 })
+
+// 用户列表
+router.get('/list', async (ctx, next) => {
+  const { userId, userName, state } = ctx.request.query
+  const { page, skipIndex } = util.pager(ctx.request.query)
+  let params = {}
+  if (userId) params.userId = userId
+  if (userName) params.userName = userName
+  if (state && state != '0') params.state = state
+  try {
+    // 根据条件查询所有用户列表，并且过滤 _id，和 userPwd 用户密码
+    const query = User.find(params, { _id: 0, userPwd: 0 })
+    const list = await query.skip(skipIndex).limit(page.pageSize) // 截取数据
+    const total = await User.countDocuments(params) //获取总条数
+    ctx.body = util.success({
+      page: {
+        ...page,
+        total
+      },
+      list
+    })
+  } catch (error) {
+    ctx.body = util.fail(`查询异常：${error.stack}`)
+  }
+})
+
 
 
 module.exports = router
