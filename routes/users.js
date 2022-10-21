@@ -102,7 +102,7 @@ router.post('/operate', async (ctx, next) => {
       return false
     }
     try {
-      const res = User.findOneAndUpdate({ userId }, { mobile, job, state, roleList, deptId })
+      const res = await User.findOneAndUpdate({ userId }, { mobile, job, state, roleList, deptId, }, { new: true })
       ctx.body = util.success({}, '更新成功')
     } catch (error) {
       ctx.body = util.fail(error.stack, '更新失败')
