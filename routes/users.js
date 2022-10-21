@@ -59,6 +59,7 @@ router.get('/list', async (ctx, next) => {
   }
 })
 
+// 用户新增与编辑
 router.post('/operate', async (ctx, next) => {
   // 获取post请求相关参数
   const { userId, userName, userEmail, mobile, job, state, roleList, deptId, action } = ctx.request.body
@@ -109,6 +110,19 @@ router.post('/operate', async (ctx, next) => {
   }
 })
 
+// 用户删除和批量删除
+router.post('/delete', async (ctx, next) => {
+  const { userIds } = ctx.request.body
+
+  // const res = await User.updateMany({ $or: [{{ userId: 100001 }, {userId:100002}] })
+  const res = await User.updateMany({ userId: { $in: userIds } }, { state: 2 })
+
+  if (res.modifiedCount) {
+    ctx.body = util.success(res, `删除成功${res.modifiedCount}条`)
+    return
+  }
+  ctx.body = util.fail('删除失败')
+})
 
 
 module.exports = router
