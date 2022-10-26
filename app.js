@@ -11,6 +11,7 @@ const log4js = require('./utils/log4j') //自定义封装的log工具
 const index = require('./routes/index')
 const users = require('./routes/users')
 const menus = require('./routes/menus')
+const roles = require('./routes/roles')
 const util = require('./utils/util')
 
 // 加载 mongoDB
@@ -70,6 +71,7 @@ app.use(koajwt({ secret: "jwt@twj" }).unless({
 // app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
 app.use(menus.routes(), menus.allowedMethods())
+app.use(roles.routes(), roles.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {
