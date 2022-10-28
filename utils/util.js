@@ -2,6 +2,8 @@
  * 通过工具函数
  */
 
+const jwt = require('koa-jwt')
+const jsonwebtoken = require('jsonwebtoken')
 const log4js = require('./log4j')
 
 const CODE = {
@@ -62,5 +64,17 @@ module.exports = {
       msg
     }
   },
-  CODE
+  CODE,
+  /**
+   * @description: 解密token
+   * @return {*} 返回token解密后的信息
+   * @param {*} authorization token
+   */
+  tokenDecodeed(authorization) {
+    if (authorization) {
+      let token = authorization.split(' ')[1]
+      return jsonwebtoken.verify(token, 'jwt@twj')
+    }
+    return ''
+  }
 }

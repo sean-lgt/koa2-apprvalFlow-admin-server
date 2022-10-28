@@ -36,6 +36,10 @@ router.post('/login', async (ctx) => {
 
 // 用户列表
 router.get('/list', async (ctx, next) => {
+  // 解密token
+  let authorization = ctx.request.headers.authorization
+  const loginUserInfo = util.tokenDecodeed(authorization)
+  console.log('🚀【登录信息】', loginUserInfo);
   const { userId, userName, state } = ctx.request.query
   const { page, skipIndex } = util.pager(ctx.request.query)
   let params = {}
