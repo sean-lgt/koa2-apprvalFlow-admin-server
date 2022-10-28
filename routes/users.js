@@ -5,6 +5,8 @@ const router = require('koa-router')()
 const jwt = require('jsonwebtoken') //生成jwt
 const md5 = require('md5') //md5加密
 const User = require('../models/userSchema')
+const Menu = require('../models/menuSchema')
+const Role = require('../models/roleSchema')
 const Counter = require('../models/counterSchema')
 const util = require('../utils/util')
 
@@ -127,6 +129,66 @@ router.post('/delete', async (ctx, next) => {
   }
   ctx.body = util.fail('删除失败')
 })
+
+
+// 获取用户对应的权限菜单
+router.get('/getPermissionList', async (ctx, next) => {
+  let authorization = ctx.request.headers.authorization
+  const { data } = util.tokenDecodeed(authorization)
+  let menuList = await getMenuList(data.role, data.roleList)
+  let actionList = getAction(JSON.parse(JSON.stringify(menuList)))
+  ctx.body = util.success({ menuList, actionList })
+})
+
+/**
+ * @description: 获取菜单列表
+ * @return {*}
+ * @param {*} userRole 用户角色
+ * @param {*} roleKeys 用户key值
+ */
+async function getMenuList(userRole, roleKeys) {
+  let rootList = []
+  if (userRole == 0) {
+    rootList = await Menu.find({}) || []
+  } else {
+    // 根据用户拥有的角色 获取权限列表
+    // 先差找用户对应的角色有哪些
+    let roleList = await Role.find({ _id: { $in: roleKeys } })
+    let permissionList = []
+    roleList.map(item => {
+      let { checkedKeys, halfCheckedKeys } = item.permissionList
+      permissionList = permissionList.concat([...checkedKeys, ...halfCheckedKeys])
+    })
+    permissionList = [...new Set(permissionList)] // 避免重复
+    roleList = await Menu.find({ _id: { $in: permissionList } })
+  }
+  return util.getTreeMenu(rootList, null, [])
+}
+
+/**
+ * @description: 获取按钮权限
+ * @return {*}
+ * @param {*} list
+ */
+function getAction(list) {
+  let actionList = []
+  const deep = (arr) => {
+    while (arr.length) {
+      let item = arr.pop()
+      if (item.action) {
+        item.action.map(action => {
+          actionList.push(action.menuCode)
+        })
+      }
+      if (item.children && !item.action) {
+        deep(item.children)
+      }
+    }
+  }
+  deep(list)
+  return actionList
+}
+
 
 
 module.exports = router
