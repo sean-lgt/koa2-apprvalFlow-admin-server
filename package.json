@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node bin/www",
-    "nodemon": "nodemon bin/www",
+    "nodemon": "nodemon ./bin/www",
+    "super": "supervisor ./bin/www",
     "dev": "./node_modules/.bin/nodemon bin/www",
     "prd": "pm2 start bin/www",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -28,6 +29,6 @@
     "pug": "^2.0.3"
   },
   "devDependencies": {
-    "nodemon": "^1.19.1"
+    "nodemon": "^2.0.7"
   }
 }
