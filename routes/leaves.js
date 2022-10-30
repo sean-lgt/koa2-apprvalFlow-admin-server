@@ -64,6 +64,33 @@ router.post('/operate', async (ctx, next) => {
 
 })
 
+// 休假申请列表
+router.get('/list', async (ctx, next) => {
+  const { applyState } = ctx.request.query
+  const { page, skipIndex } = util.pager(ctx.request.query)
+  const authorization = ctx.request.headers.authorization
+  const { data } = util.tokenDecodeed(authorization)
+  try {
+    let params = {}
+    params = {
+      'applyUser.userId': data.userId
+    }
+    if (applyState) params.applyState = applyState
+    const query = Leave.find(params)
+    const list = await query.skip(skipIndex).limit(page.pageSize)
+    const total = await Leave.countDocuments()
+    ctx.body = util.success({
+      page: {
+        ...page,
+        total
+      },
+      list
+    })
+  } catch (error) {
+    ctx.body = util.fail(`查询失败:${error.stack}`)
+  }
+})
+
 
 
 module.exports = router
