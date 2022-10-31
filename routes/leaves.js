@@ -29,11 +29,21 @@ router.post('/operate', async (ctx, next) => {
     // 获取人事部门和财务部门负责人信息
     const userList = await Dept.find({ deptName: { $in: ['人事部门', '财务部门'] } })
     //负责审核人
-    const auditUsers = dept.userName
+    let auditUsers = ""
     // 审核流
-    const auditFlows = [
-      { userId: dept.userId, userName: dept.userName, userEmail: dept.userEmail }
-    ]
+    let auditFlows = []
+    if (dept) {
+      auditUsers = dept.userName
+      auditFlows = [
+        { userId: dept.userId, userName: dept.userName, userEmail: dept.userEmail }
+      ]
+    } else {
+      auditUsers = data.userName
+      auditFlows = [
+        { userId: data.userId, userName: data.userName, userEmail: data.userEmail }
+      ]
+    }
+
     userList.map(item => {
       auditFlows.push({
         userId: item.userId,
@@ -44,7 +54,7 @@ router.post('/operate', async (ctx, next) => {
     })
 
     params.auditUsers = auditUsers;
-    params.curAuditUserName = dept.userName;
+    params.curAuditUserName = auditUsers; //dept.userName
     params.auditFlows = auditFlows;
     params.auditLogs = []
     params.applyUser = {
