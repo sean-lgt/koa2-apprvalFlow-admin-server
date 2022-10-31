@@ -66,16 +66,29 @@ router.post('/operate', async (ctx, next) => {
 
 // 休假申请列表
 router.get('/list', async (ctx, next) => {
-  const { applyState } = ctx.request.query
+  const { applyState, type } = ctx.request.query
   const { page, skipIndex } = util.pager(ctx.request.query)
   const authorization = ctx.request.headers.authorization
   const { data } = util.tokenDecodeed(authorization)
   try {
     let params = {}
-    params = {
-      'applyUser.userId': data.userId
+    if (type == 'approve') {
+      if (applyState == 1 || applyState == 2) {
+        // 状态
+        params.curAuditUserName = data.userName
+        params.$or = [{ applyState: 1 }, { applyState: 2 }]
+      } else if (applyState > 2) {
+        params = { "auditFlows.userId": data.userId, applyState }
+      } else {
+        params = { "auditFlows.userId": data.userId }
+      }
+    } else {
+      params = {
+        'applyUser.userId': data.userId
+      }
+      if (applyState) params.applyState = applyState
     }
-    if (applyState) params.applyState = applyState
+
     const query = Leave.find(params)
     const list = await query.skip(skipIndex).limit(page.pageSize)
     const total = await Leave.countDocuments()
