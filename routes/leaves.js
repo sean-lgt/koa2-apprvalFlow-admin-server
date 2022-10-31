@@ -114,6 +114,46 @@ router.get('/list', async (ctx, next) => {
   }
 })
 
+// 休假申请审核操作
+router.post('/approve', async (ctx, next) => {
+  const { action, remark, _id } = ctx.request.body
+  const authorization = ctx.request.headers.authorization
+  const { data } = util.tokenDecodeed(authorization)
+  let params = {}
+  try {
+    // 1:待审批 2:审批中 3:审批拒绝 4:审批通过 5:作废
+    const doc = await Leave.findById(_id)
+    const auditLogs = doc.auditLogs || []
+    console.log('🚀【approve-action】', action)
+    if (action == 'refuse') {
+      params.applyState = 3
+    } else {
+      // 审核通过
+      if (doc.auditFlows.length == doc.auditLogs.length) {
+        ctx.body = util.success('当前申请单已处理，请勿重复提交')
+        return
+      } else if (doc.auditFlows.length == doc.auditLogs.length + 1) {
+        params.applyState = 4
+      } else if (doc.auditFlows.length > doc.auditLogs.length) {
+        params.applyState = 2
+        params.curAuditUserName = doc.auditFlows[doc.auditLogs.length + 1].userName
+      }
+    }
+    auditLogs.push({
+      userId: data.userId,
+      userName: data.userName,
+      createTime: new Date(),
+      remark,
+      action: action == 'refuse' ? "审核拒绝" : "审核通过"
+    })
+    params.auditLogs = auditLogs;
+    let res = await Leave.findByIdAndUpdate(_id, params);
+    ctx.body = util.success("", "处理成功");
+  } catch (error) {
+    ctx.body = util.fail(`查询异常：${error.message}`)
+  }
+})
+
 
 
 module.exports = router
