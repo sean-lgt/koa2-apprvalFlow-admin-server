@@ -155,5 +155,20 @@ router.post('/approve', async (ctx, next) => {
 })
 
 
+// 获取通知数量
+router.get('/count', async (ctx, next) => {
+  const authorization = ctx.request.headers.authorization
+  const { data } = util.tokenDecodeed(authorization)
+  try {
+    let params = {}
+    params.curAuditUserName = data.userName
+    params.$or = [{ applyState: 1 }, { applyState: 2 }]
+    const total = await Leave.countDocuments(params)
+    ctx.body = util.success(total)
+  } catch (error) {
+    ctx.body = util.fail(`查询异常：${error.message}`)
+  }
+})
+
 
 module.exports = router
