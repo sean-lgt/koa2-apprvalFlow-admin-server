@@ -43,3 +43,12 @@
     ├── index.pug
     └── layout.pug
 ```
+
+## Mongo简单入门
+> 参考文档1：https://www.mongodb.org.cn/tutorial/
+> 
+> 参考文档2：https://mongoing.com/mongodb-beginner-tutorial
+> 
+> 参考文档3：https://pdai.tech/md/db/nosql-mongo/mongo.html
+  
+  
